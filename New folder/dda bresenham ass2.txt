@@ -1,0 +1,81 @@
+#include <GL/glut.h>
+#include <iostream>
+using namespace std;
+int algo, type;
+int x_start, y_start, x_end, y_end, click = 0;
+void plot(int x, int y) {
+glBegin(GL_POINTS);
+glVertex2i(x, y);
+glEnd();
+}
+void dda(int x1, int y1, int x2, int y2, int type) {
+float dx = x2 - x1, dy = y2 - y1;
+int steps = max(abs(dx), abs(dy));
+float x = x1, y = y1;
+float x_inc = dx / steps, y_inc = dy / steps;
+for (int i = 0; i <= steps; i++, x += x_inc, y += y_inc)
+if (type == 1 || (type == 2 && i % 2 == 0) || (type == 3 && i % 15
+< 10))
+plot(x, y);
+glFlush();
+}
+void bresenham(int x1, int y1, int x2, int y2, int type) {
+int dx = abs(x2 - x1), dy = abs(y2 - y1);
+int sx = x1 < x2 ? 1 : -1;
+int sy = y1 < y2 ? 1 : -1;
+int err = dx - dy;
+for (int i = 0;; i++) {
+if (type == 1 || (type == 2 && i % 2 == 0) || (type == 3 && i % 15
+< 10))
+plot(x1, y1);
+if (x1 == x2 && y1 == y2) break;
+int e2 = 2 * err;
+if (e2 > -dy) { err -= dy; x1 += sx; }
+if (e2 < dx) { err += dx; y1 += sy; }
+}
+glFlush();
+}
+void mouse(int button, int state, int x, int y) {
+
+if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+if (!click) {
+x_start = x;
+y_start = 480 - y;
+click = 1;
+} else {
+x_end = x;
+y_end = 480 - y;
+if (algo == 1)
+dda(x_start, y_start, x_end, y_end, type);
+else
+bresenham(x_start, y_start, x_end, y_end, type);
+click = 0;
+}
+}
+}
+void display() {
+// Draw X and Y axis
+dda(0, 240, 640, 240, 1); // horizontal
+dda(320, 0, 320, 480, 1); // vertical
+}
+void init() {
+glClearColor(0, 0, 0, 1);
+glColor3f(0, 1, 0);
+gluOrtho2D(0, 640, 0, 480);
+glClear(GL_COLOR_BUFFER_BIT);
+glFlush();
+}
+int main(int argc, char** argv) {
+cout << "Algo (1=DDA, 2=BRE): ";
+cin >> algo;
+cout << "Type (1=Simple, 2=Dotted, 3=Dashed): ";
+cin >> type;
+glutInit(&argc, argv);
+glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
+glutInitWindowSize(640, 480);
+glutCreateWindow("Simple Line Drawer");
+init();
+glutDisplayFunc(display);
+glutMouseFunc(mouse);
+glutMainLoop();
+}

@@ -1,0 +1,114 @@
+#include <cmath>
+#include <GL/glut.h>
+#include <iostream>
+#include <vector>
+using namespace std;
+vector<pair<int, int>> points;
+vector<pair<int, int>> transformedPoints;
+void drawAxes() {
+glColor3f(0, 0, 0); // Black
+glBegin(GL_LINES);
+glVertex2i(320, 0); glVertex2i(320,
+480); // y axis lol
+glVertex2i(0, 240); glVertex2i(640,
+240); // x asis lol
+glEnd();
+}
+void drawShape(vector<pair<int, int>>& pts) {
+glColor3f(0, 0, 1); // Blue
+glBegin(GL_LINE_LOOP);
+for (auto p : pts) {
+glVertex2i(p.first + 320, p.second + 240);
+}
+glEnd();
+}
+void scale(float sx, float sy) {
+transformedPoints.clear();
+for (auto p : points) {
+transformedPoints.push_back({p.first * sx,
+p.second * sy});
+}
+}
+
+void rotate(float angle, int px, int py) {
+transformedPoints.clear();
+float rad = angle * 3.14159265359 / 180.0;
+for (auto p : points) {
+int x = p.first - px, y = p.second - py;
+float x_rot = x * cos(rad) - y * sin(rad);
+float y_rot = x * sin(rad) + y * cos(rad);
+transformedPoints.push_back({x_rot + px,
+y_rot + py});
+}
+}
+void reflect(char axis) {
+transformedPoints.clear();
+for (auto p : points) {
+if (axis == 'x') {
+transformedPoints.push_back({p.first,
+-p.second});
+} else if (axis == 'y') {
+transformedPoints.push_back({-p.first,
+p.second});
+}
+}
+}
+void display() {
+glClear(GL_COLOR_BUFFER_BIT);
+drawAxes();
+drawShape(points);
+drawShape(transformedPoints);
+glFlush();
+}
+void init() {
+glClearColor(1, 1, 1, 1);
+
+gluOrtho2D(0, 640, 0, 480);
+}
+void input() {
+int n;
+cout << "Enter number of vertices: ";
+cin >> n;
+cout << "Enter the vertices (x y): \n";
+for (int i = 0; i < n; ++i) {
+int x, y;
+cin >> x >> y;
+points.push_back({x, y});
+}
+int choice;
+cout << "\nSelect transformation:\n1.
+Scaling\n2. Rotation\n3. Reflection\n> ";
+cin >> choice;
+if (choice == 1) {
+float sx, sy;
+cout << "Enter scaling factors (sx, sy): ";
+cin >> sx >> sy;
+scale(sx, sy);
+} else if (choice == 2) {
+float angle;
+int px, py;
+cout << "Enter angle (in degrees) and
+arbitrary point (px, py): ";
+cin >> angle >> px >> py;
+rotate(angle, px, py);
+} else if (choice == 3) {
+char axis;
+cout << "Enter axis for reflection (x or
+y): ";
+
+cin >> axis;
+reflect(axis);
+}
+}
+int main(int argc, char** argv) {
+input(); // Get user input for points and
+transformation
+glutInit(&argc, argv);
+glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
+glutInitWindowSize(640, 480);
+glutCreateWindow("Simple 2D Transformations");
+init();
+glutDisplayFunc(display);
+glutMainLoop();
+return 0;
+}
